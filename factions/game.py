@@ -7,7 +7,7 @@ class Game:
         self.screen = pygame.display.set_mode((width, height))
         pygame.display.set_caption('Faction Wars')
         self.clock = pygame.time.Clock()
-        self.world = World(width, height)
+        self.world = World(width, height, 50) # num of food
 
     def run(self):
         running = True

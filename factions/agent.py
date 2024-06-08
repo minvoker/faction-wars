@@ -1,10 +1,10 @@
 import pygame
 from vector2d import Vector2D
-from random import uniform
+from random import uniform, randint
 from math import sin, cos, radians
 
 class Agent:
-    def __init__(self, world, position, group, radius=5, color=(255, 0, 0), scale=1, mass=0.6, mode='wander'):
+    def __init__(self, world, position, group, radius=5, color=(255, 0, 0), scale=1, mass=0.8, mode='wander'):
         self.world = world
         self.mode = mode
         self.group = group
@@ -14,7 +14,8 @@ class Agent:
         self.color = color
         self.scale = Vector2D(scale, scale) 
         self.mass = mass
-
+        self.alive = True
+        
         # Behavior weights
         self.cohesion_weight = 1.0
         self.separation_weight = 1.0
@@ -30,10 +31,13 @@ class Agent:
         # Limits
         self.max_speed = 10.0 * scale
         self.max_force = 500.0
+        
+        # Goals
+        self.carrying_food = None
 
     def update(self, delta_time): 
         # Calculate the steering force
-        steering_force = self.calculate()
+        steering_force = self.state_machine()
         steering_force.truncate(self.max_force)
 
         # Apply the force to acceleration
@@ -46,11 +50,27 @@ class Agent:
 
         # Ensure the agent stays within bounds
         self.check_bounds()
+        # Check for food collision
+        self.check_food_collision()
 
-    def calculate(self): # Main steering logic
+    def state_machine(self):
+        if self.mode == 'carry_food':
+            x, y, width, height = self.group.king_zone
+            target_pos = Vector2D(x + width / 2, y + height / 2)
+            
+            # If food already in zone, drop it
+            if self.is_in_king_zone():
+                self.drop_food()
+                self.mode = 'wander'
+            return self.seek(target_pos)
+        
+        elif self.mode == 'wander':
+            return self.calculate()
+        
+    def calculate(self): 
         # Calculate the current steering force
         delta = 3.0
-        neighbors = self.get_neighbors(50)  # Example radius for neighborhood
+        neighbors = self.get_neighbors(10)
 
         cohesion_force = self.cohesion(neighbors) * self.cohesion_weight
         separation_force = self.separation(neighbors) * self.separation_weight
@@ -65,11 +85,13 @@ class Agent:
         else:
             flee_force = Vector2D()
 
-        steering_force = cohesion_force + separation_force + alignment_force + wander_force + flee_force
+        steering_force = cohesion_force + separation_force + alignment_force + wander_force 
+        if flee_force != Vector2D():
+            steering_force += flee_force
+            
         steering_force.truncate(self.max_force)
 
         return steering_force
-
 
     def check_bounds(self):
         if self.position.x - self.radius < 0:
@@ -181,3 +203,58 @@ class Agent:
     def flee(self, enemy):
         desired_velocity = (self.position - enemy.position).normalise() * self.max_speed
         return desired_velocity - self.velocity
+
+    # Goals and objectives --------------------------------------------------------------------------------------------------
+    # FOOD
+    def drop_food(self):
+        if self.carrying_food:
+            self.carrying_food.being_held_by = None
+            self.carrying_food = None
+            self.mode = 'wander'
+
+    def check_food_collision(self):
+        if self.carrying_food is None:
+            for food in self.world.food:
+                if (self.position - food.position).length() < self.radius + food.radius and not food.is_in_king_zone(self.group):
+                    if food.being_held_by is None:
+                        food.add_touching_agent(self)
+                        self.carrying_food = food
+                        food.being_held_by = self
+                        self.mode = 'carry_food'
+                        break
+
+    def is_in_king_zone(self): # Check if agent is in king zone, IMPROVE DROP LOCATION LATER.
+        if self.carrying_food:
+            x, y, width, height = self.group.king_zone
+            margin = 50  # for the inner area
+            inner_x = x + margin
+            inner_y = y + margin
+            inner_width = width - 2 * margin
+            inner_height = height - 2 * margin
+            return inner_x <= self.position.x <= inner_x + inner_width and inner_y <= self.position.y <= inner_y + inner_height
+        return False
+    
+    
+    
+    
+class KingAgent(Agent):
+    def __init__(self, world, position, group, zone, radius=10, color=(0, 255, 0), scale=0.7, mass=1):
+        super().__init__(world, position, group, radius, color, scale, mass)
+        self.zone = zone  # tuple: (x, y, width, height)
+        
+    def check_bounds(self):
+        x, y, width, height = self.zone
+
+        if self.position.x - self.radius < x:
+            self.position.x = x + self.radius
+            self.velocity.x *= -1
+        elif self.position.x + self.radius > x + width:
+            self.position.x = x + width - self.radius
+            self.velocity.x *= -1
+
+        if self.position.y - self.radius < y:
+            self.position.y = y + self.radius
+            self.velocity.y *= -1
+        elif self.position.y + self.radius > y + height:
+            self.position.y = y + height - self.radius
+            self.velocity.y *= -1
