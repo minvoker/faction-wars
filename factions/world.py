@@ -2,6 +2,7 @@ import pygame
 from agent_group import AgentGroup
 from matrix33 import Matrix33
 from food import Food
+from wall_generator import WallGenerator
 
 class World:
     def __init__(self, width, height, num_food):
@@ -9,18 +10,14 @@ class World:
         self.height = height
         
         # Define start zones in the corners
-        start_zone_size = min(width, height) // 5
+        self.start_zone_size = min(width, height) // 5
+        start_zone_size = self.start_zone_size
+
         self.kzone1 = (0, 0, start_zone_size, start_zone_size)
         self.kzone2 = (width - start_zone_size, height - start_zone_size, start_zone_size, start_zone_size)
         
-        # Add walls, gen here later.
-        wall_thickness = 20
-        self.walls = [
-            Wall(self, (start_zone_size, start_zone_size), width - 3 * start_zone_size, wall_thickness),
-            Wall(self, (start_zone_size, height - start_zone_size - wall_thickness), width - 2 * start_zone_size, wall_thickness),
-            Wall(self, (start_zone_size, start_zone_size), wall_thickness, height - 3 * start_zone_size),
-            Wall(self, (width - start_zone_size - wall_thickness, start_zone_size), wall_thickness, height - 2 * start_zone_size),
-        ]
+        # Add walls
+        self.walls = WallGenerator(self).generate
         
         # Add two groups of agents, lags around 500 each
         self.group1 = AgentGroup(self, 200, (255, 0, 0), 0.4, 1.0, 1.0, 1.0, self.kzone1)
@@ -79,11 +76,3 @@ class World:
         mat.transform_vector2d_list(wld_pts)
         return wld_pts
 
-class Wall:
-    def __init__(self, world, position, width, height):
-        self.world = world
-        self.rect = pygame.Rect(position[0], position[1], width, height)
-        self.color = (0, 0, 0)
-
-    def render(self, screen):
-        pygame.draw.rect(screen, self.color, self.rect)
