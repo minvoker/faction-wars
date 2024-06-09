@@ -10,10 +10,10 @@ if __name__ == "__main__":
 
 
 
-'''
+'''   MAYBE MAKE KING ZONES IN OPPOSITE CORNERS INSTEAD??? MORE MAP SPACE FOR AGENTS TO WANDER AROUND
 Base world DONE
 Agent groups DONE
-agent steering behaviour DONE
+agent steering DONE
 
 FSM - 2 states: wander and carry_food
 - wander: DONE
@@ -30,7 +30,11 @@ Faction goals
 
 Environment Objects/objectives TO-DO
 - Food DONE
-- Walls TO-DO
+- Walls TO-DO 
 
+
+Future:
+Optimization to allow for more agents
+- General code, Grid based (neighbour detection)
 
 '''

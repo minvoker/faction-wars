@@ -1,0 +1,1 @@
+''' Generate interesting walls for the simulation '''

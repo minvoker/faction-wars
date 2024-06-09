@@ -24,7 +24,7 @@ class Agent:
 
         # Initialize wander properties
         self.wander_target = Vector2D(1, 0)
-        self.wander_distance = 1.0 * scale
+        self.wander_distance = 1.2 * scale
         self.wander_radius = 1.0 * scale
         self.wander_jitter = 2.0 * scale
 
@@ -70,7 +70,7 @@ class Agent:
     def calculate(self): 
         # Calculate the current steering force
         delta = 3.0
-        neighbors = self.get_neighbors(10)
+        neighbors = self.get_neighbors(8) # Neighbour detection radius
 
         cohesion_force = self.cohesion(neighbors) * self.cohesion_weight
         separation_force = self.separation(neighbors) * self.separation_weight
@@ -215,7 +215,7 @@ class Agent:
     def check_food_collision(self):
         if self.carrying_food is None:
             for food in self.world.food:
-                if (self.position - food.position).length() < self.radius + food.radius and not food.is_in_king_zone(self.group):
+                if self.position.distance(food.position) < self.radius + food.radius and not food.is_in_king_zone(self.group):
                     if food.being_held_by is None:
                         food.add_touching_agent(self)
                         self.carrying_food = food
@@ -245,12 +245,12 @@ class KingAgent(Agent):
     def check_bounds(self):
         x, y, width, height = self.zone
 
-        if self.position.x - self.radius < x:
+        if self.position.x < x + self.radius:
             self.position.x = x + self.radius
-            self.velocity.x *= -1
-        elif self.position.x + self.radius > x + width:
+            self.velocity.x = abs(self.velocity.x)
+        elif self.position.x > x + width - self.radius:
             self.position.x = x + width - self.radius
-            self.velocity.x *= -1
+            self.velocity.x = -abs(self.velocity.x)
 
         if self.position.y - self.radius < y:
             self.position.y = y + self.radius
