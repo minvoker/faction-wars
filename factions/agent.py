@@ -50,7 +50,9 @@ class Agent:
 
         # Ensure the agent stays within bounds
         self.check_bounds()
+        self.check_wall_collision()
         # Check for food collision
+        # TO-DO: If food in radius, check food collision 
         self.check_food_collision()
 
     def state_machine(self):
@@ -78,16 +80,7 @@ class Agent:
         
         wander_force = self.wander(delta) * self.wander_weight
 
-        # TEST, flee other faction agents
-        enemy = self.detect_enemy()
-        if enemy:
-            flee_force = self.flee(enemy)
-        else:
-            flee_force = Vector2D()
-
         steering_force = cohesion_force + separation_force + alignment_force + wander_force 
-        if flee_force != Vector2D():
-            steering_force += flee_force
             
         steering_force.truncate(self.max_force)
 
@@ -108,6 +101,32 @@ class Agent:
             self.position.y = self.world.height - self.radius
             self.velocity.y *= -1
 
+    def check_wall_collision(self):
+        for wall in self.world.walls:
+            if self.inside_wall(wall.rect):
+                if self.position.x < wall.rect.left:
+                    self.position.x = wall.rect.left - self.radius
+                    self.velocity.x *= -1
+                elif self.position.x > wall.rect.right:
+                    self.position.x = wall.rect.right + self.radius
+                    self.velocity.x *= -1
+
+                if self.position.y < wall.rect.top:
+                    self.position.y = wall.rect.top - self.radius
+                    self.velocity.y *= -1
+                elif self.position.y > wall.rect.bottom:
+                    self.position.y = wall.rect.bottom + self.radius
+                    self.velocity.y *= -1
+                
+    def inside_wall(self, rect):
+        # Check if the circle (agent) collides with the rectangle (wall)
+        closest_x = max(rect.left, min(self.position.x, rect.right))
+        closest_y = max(rect.top, min(self.position.y, rect.bottom))
+        distance_x = self.position.x - closest_x
+        distance_y = self.position.y - closest_y
+        distance_squared = (distance_x * distance_x) + (distance_y * distance_y)
+        return distance_squared < (self.radius * self.radius)
+                
     def apply_behavior_weights(self, cohesion, separation, alignment, wander):
         self.cohesion_weight = cohesion
         self.separation_weight = separation
@@ -203,6 +222,9 @@ class Agent:
     def flee(self, enemy):
         desired_velocity = (self.position - enemy.position).normalise() * self.max_speed
         return desired_velocity - self.velocity
+    
+    def plan_path(target):
+        pass
 
     # Goals and objectives --------------------------------------------------------------------------------------------------
     # FOOD

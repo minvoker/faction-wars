@@ -12,20 +12,33 @@ class AgentGroup:
         self.alignment_weight = alignment_weight
         self.wander_weight = wander_weight
         self.king_zone = king_zone
-        #self.goals = goals
-        #self.king = None
 
         if king_zone:
-            king_pos = Vector2D(randint(king_zone[0], king_zone[0] + king_zone[2]), randint(king_zone[1], king_zone[1] + king_zone[3]))
+            king_pos = self.get_valid_position(king_zone)
             king = KingAgent(world, king_pos, self, self.king_zone, color=color)
             self.agents.append(king)
-            #self.king = king
-            
-        for i in range(num_agents):
-            position = Vector2D(randint(0, world.width), randint(0, world.height))
-            agent = Agent(world, position, self, color=color, mode='wander')
-            agent.apply_behavior_weights(cohesion_weight, separation_weight, alignment_weight, wander_weight)
-            self.agents.append(agent)
+
+            for i in range(num_agents):
+                position = self.get_valid_position(king_zone)
+                agent = Agent(world, position, self, color=color, mode='wander')
+                agent.apply_behavior_weights(cohesion_weight, separation_weight, alignment_weight, wander_weight)
+                self.agents.append(agent)
+        else:
+            raise ValueError("King zone must be specified to spawn agents")
+
+    def get_valid_position(self, zone):
+        while True:
+            x = randint(zone[0], zone[0] + zone[2])
+            y = randint(zone[1], zone[1] + zone[3])
+            position = Vector2D(x, y)
+            if not self.is_position_in_wall(position):
+                return position
+
+    def is_position_in_wall(self, position):
+        for wall in self.world.walls:
+            if wall.rect.collidepoint(position.x, position.y):
+                return True
+        return False
 
     def update(self, delta_time):
         for agent in self.agents:
