@@ -8,12 +8,12 @@ class Game:
         pygame.display.set_caption('Faction Wars')
         self.clock = pygame.time.Clock()
         self.font = pygame.font.Font(None, 30) 
-        self.world = World(width, height, 90) # num of food
+        self.world = World(width, height) 
 
     def run(self):
         running = True
         while running:
-            delta_time = self.clock.tick(60) / 100.0  # Delta time in seconds, change to 200 for default !!
+            delta_time = self.clock.tick(60) / 80.0  # Delta time in seconds, change to 200 for default !!
 
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:

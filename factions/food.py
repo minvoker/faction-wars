@@ -7,10 +7,7 @@ class Food:
         self.world = world
         self.radius = radius
         self.color = color
-        if position is None:
-            self.position = Vector2D(randint(0, world.width), randint(0, world.height))
-        else:
-            self.position = position
+        self.position = position if position else self.spawn() 
         self.being_held_by = None
 
     def update(self):
@@ -33,3 +30,11 @@ class Food:
                 if group is None or group == g:
                     return True
         return False
+    
+    def spawn(self):
+            while True:
+                x = randint(0, self.world.width)
+                y = randint(0, self.world.height)
+                position = Vector2D(x, y)
+                if not any(wall.rect.collidepoint(position.x, position.y) for wall in self.world.walls):
+                    return position

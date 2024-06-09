@@ -5,7 +5,7 @@ from food import Food
 from wall_generator import WallGenerator
 
 class World:
-    def __init__(self, width, height, num_food):
+    def __init__(self, width, height):
         self.width = width
         self.height = height
         
@@ -22,8 +22,9 @@ class World:
         # Add two groups of agents, lags around 500 each
         self.group1 = AgentGroup(self, 200, (255, 0, 0), 0.4, 1.0, 1.0, 1.0, self.kzone1)
         self.group2 = AgentGroup(self, 200, (0, 0, 255), 0.4, 1.0, 1.0, 1.0, self.kzone2)
-        
-        self.food = [Food(self) for _ in range(num_food)]
+        # Add Food
+        self.num_food = 80
+        self.food = [Food(self) for _ in range(self.num_food)]
         
     def update(self, delta_time):
         self.group1.update(delta_time)
