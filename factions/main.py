@@ -14,26 +14,29 @@ if __name__ == "__main__":
 Base world DONE
 Agent groups DONE
 agent steering DONE
-
-World as searchable graph TO-DO
+World as searchable graph DONE
 
 FSM
 - wander: DONE
 - carry_food: DONE
-- fight: TO-DO
+- fight: DONE
 
 Individual goals
 - Bring food: DONE
 - Avoid enemy agents / Fight: TO-DO
+
+Environment Objects/objectives TO-DO
+- Food DONE
+- Walls DONE
 
 Faction goals 
 - Bring food to king zone: DONE
 - Attack other faction: TO-DO
 - Explore outward, retreat TO-DO
 
-Environment Objects/objectives TO-DO
-- Food DONE
-- Walls DONE
+GENERAL
+- Adjust parameters for better results 
+- Show agentgroup count 
 
 
 Future:

@@ -19,10 +19,10 @@ class World:
         self.kzone2 = (width - start_zone_size, height - start_zone_size, start_zone_size, start_zone_size)
         
         # Add walls
-        self.walls = WallGenerator(self).generate
+        self.walls = WallGenerator(self).test_walls
         
         # Add two groups of agents, lags around 500 each
-        self.group1 = AgentGroup(self, 200, (255, 0, 0), 0.4, 1.0, 1.0, 1.0, self.kzone1)
+        self.group1 = AgentGroup(self, 200, (255, 0, 0), 0.4, 0.4, 0.4, 1.0, self.kzone1)
         self.group2 = AgentGroup(self, 200, (0, 0, 255), 0.4, 1.0, 1.0, 1.0, self.kzone2)
         
         # Add Food
@@ -30,7 +30,7 @@ class World:
         self.food = [Food(self) for _ in range(self.num_food)]
         
         # Grid overlay for path planning 
-        self.cell_size = 30 # Changeable
+        self.cell_size = 30 # Some values break it...
         self.grid_width = width // self.cell_size
         self.grid_height = height // self.cell_size
         self.grid = [[0 for _ in range(self.grid_height)] for _ in range(self.grid_width)]

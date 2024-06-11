@@ -12,6 +12,7 @@ class AgentGroup:
         self.alignment_weight = alignment_weight
         self.wander_weight = wander_weight
         self.king_zone = king_zone
+        self.goal = None
 
         if king_zone:
             king_pos = self.get_valid_position(king_zone)
@@ -41,8 +42,11 @@ class AgentGroup:
         return False
 
     def update(self, delta_time):
-        for agent in self.agents:
-            agent.update(delta_time)
+        for agent in self.agents[:]:  # Iterate over a copy of the list
+            if not agent.alive:
+                self.agents.remove(agent)
+            else:
+                agent.update(delta_time)
 
     def render(self, screen):
         for agent in self.agents:
@@ -50,3 +54,9 @@ class AgentGroup:
 
     def get_agents(self):
         return self.agents
+
+    def retreat(self):
+        pass
+
+    def attack(self):
+        pass
