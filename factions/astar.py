@@ -7,9 +7,6 @@ class Node:
         self.action = action
         self.path_cost = path_cost
 
-    def __lt__(self, other):
-        return self.path_cost < other.path_cost
-
     def expand(self, get_neighbors, step_cost):
         return [self.child_node(get_neighbors, step_cost, action) for action in get_neighbors(self.state)]
 
@@ -18,21 +15,15 @@ class Node:
         next_node = Node(next_state, self, action, self.path_cost + step_cost(self.state, action))
         return next_node
 
-    def solution(self):
-        return [node.action for node in self.path()]
-
     def path(self):
         node, path_back = self, []
         while node:
-            path_back.append(node)
+            path_back.append(node.state)
             node = node.parent
         return list(reversed(path_back))
 
-    def __eq__(self, other):
-        return isinstance(other, Node) and self.state == other.state
-
-    def __hash__(self):
-        return hash(self.state)
+    def __lt__(self, other):
+        return self.path_cost < other.path_cost
 
 class PriorityQueue:
     def __init__(self, order='min', f=lambda x: x):

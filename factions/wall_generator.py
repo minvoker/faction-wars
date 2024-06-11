@@ -39,6 +39,7 @@ class WallGenerator:
             return walls
 
     def is_valid_wall_position(self, x, y, wall_width, wall_height):
+        # Ensure walls are not placed in specified locations.
             # King zones
             kzone1_x, kzone1_y, kzone1_width, kzone1_height = self.world.kzone1
             kzone2_x, kzone2_y, kzone2_width, kzone2_height = self.world.kzone2

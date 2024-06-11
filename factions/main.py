@@ -10,12 +10,14 @@ if __name__ == "__main__":
 
 
 
-'''   MAYBE MAKE KING ZONES IN OPPOSITE CORNERS INSTEAD??? MORE MAP SPACE FOR AGENTS TO WANDER AROUND
+'''
 Base world DONE
 Agent groups DONE
 agent steering DONE
 
-FSM - 2 states: wander and carry_food
+World as searchable graph TO-DO
+
+FSM
 - wander: DONE
 - carry_food: DONE
 - fight: TO-DO
@@ -27,10 +29,11 @@ Individual goals
 Faction goals 
 - Bring food to king zone: DONE
 - Attack other faction: TO-DO
+- Explore outward, retreat TO-DO
 
 Environment Objects/objectives TO-DO
 - Food DONE
-- Walls TO-DO 
+- Walls DONE
 
 
 Future:

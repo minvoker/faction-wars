@@ -34,10 +34,13 @@ class Agent:
         
         # Goals
         self.carrying_food = None
+        self.target = None
+        self.path = []
 
     def update(self, delta_time): 
         # Calculate the steering force
         steering_force = self.state_machine()
+
         steering_force.truncate(self.max_force)
 
         # Apply the force to acceleration
@@ -58,15 +61,24 @@ class Agent:
     def state_machine(self):
         if self.mode == 'carry_food':
             x, y, width, height = self.group.king_zone
-            target_pos = Vector2D(x + width / 2, y + height / 2)
+            self.target = Vector2D(x + width / 2, y + height / 2)
             
             # If food already in zone, drop it
             if self.is_in_king_zone():
                 self.drop_food()
                 self.mode = 'wander'
-            return self.seek(target_pos)
+                self.target = None
+            # If still holding food
+            return self.pathfinder(self.target) 
         
+        elif self.mode == 'follow_path':
+            force = self.pathfinder(self.target)
+            if force is None or (force.x == 0 and force.y == 0): # Empty Vec2D
+                self.mode = 'wander'
+            return force
+
         elif self.mode == 'wander':
+            self.target = None
             return self.calculate()
         
     def calculate(self): 
@@ -205,7 +217,7 @@ class Agent:
         return average_heading - self.velocity.get_normalised()
 
     # Individual steering behaviors
-    def wander(self, delta):
+    def wander(self, delta): # For random wandering
         wt = self.wander_target
         jitter_tts = self.wander_jitter * delta
         wt += Vector2D(uniform(-1, 1) * jitter_tts, uniform(-1, 1) * jitter_tts)
@@ -215,17 +227,33 @@ class Agent:
         wld_target = self.world.transform_points([target], self.position, self.velocity.get_normalised(), self.velocity.get_normalised().perp(), self.scale)
         return self.seek(wld_target[0])
 
-    def seek(self, target_pos):
+    def seek(self, target_pos): # Use for targeting enemies
         desired_vel = (target_pos - self.position).normalise() * self.max_speed
         return desired_vel - self.velocity
     
-    def flee(self, enemy):
+    def flee(self, enemy): # Not implemented yet
         desired_velocity = (self.position - enemy.position).normalise() * self.max_speed
         return desired_velocity - self.velocity
     
-    def plan_path(target):
-        pass
+    def pathfinder(self, target):  # For exploring, seems to work for now
+        if not self.path:
+            self.path = self.world.plan_path(self.position, target)  # Use A* to plan path
+            if not self.path:  # If no path is found, return an empty vector
+                print("DEBUG: NO PATH FOUND")
+                return self.seek(target)
 
+        if self.path:
+            next_pos = self.path[0]
+            if self.position.distance(next_pos) < self.radius:
+                self.path.pop(0)
+                if not self.path:  # Path is completed
+                    return Vector2D(0, 0)
+            return self.seek(next_pos)
+
+        print("DEBUG: PATHFINDER CALLED WITH NO PATH")
+        return Vector2D(0, 0)
+
+        
     # Goals and objectives --------------------------------------------------------------------------------------------------
     # FOOD
     def drop_food(self):
@@ -255,8 +283,6 @@ class Agent:
             inner_height = height - 2 * margin
             return inner_x <= self.position.x <= inner_x + inner_width and inner_y <= self.position.y <= inner_y + inner_height
         return False
-    
-    
     
     
 class KingAgent(Agent):

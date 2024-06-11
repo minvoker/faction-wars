@@ -3,6 +3,8 @@ from agent_group import AgentGroup
 from matrix33 import Matrix33
 from food import Food
 from wall_generator import WallGenerator
+from astar import Node, a_star_search 
+from vector2d import Vector2D
 
 class World:
     def __init__(self, width, height):
@@ -22,9 +24,17 @@ class World:
         # Add two groups of agents, lags around 500 each
         self.group1 = AgentGroup(self, 200, (255, 0, 0), 0.4, 1.0, 1.0, 1.0, self.kzone1)
         self.group2 = AgentGroup(self, 200, (0, 0, 255), 0.4, 1.0, 1.0, 1.0, self.kzone2)
+        
         # Add Food
         self.num_food = 80
         self.food = [Food(self) for _ in range(self.num_food)]
+        
+        # Grid overlay for path planning 
+        self.cell_size = 30 # Changeable
+        self.grid_width = width // self.cell_size
+        self.grid_height = height // self.cell_size
+        self.grid = [[0 for _ in range(self.grid_height)] for _ in range(self.grid_width)]
+        self.initialize_grid()
         
     def update(self, delta_time):
         self.group1.update(delta_time)
@@ -77,3 +87,44 @@ class World:
         mat.transform_vector2d_list(wld_pts)
         return wld_pts
 
+    # Grid and planning stuff
+    def initialize_grid(self):
+        for wall in self.walls:
+            rect = wall.rect
+            start_grid_x = max(0, rect.x // self.cell_size)
+            start_grid_y = max(0, rect.y // self.cell_size)
+            end_grid_x = min(self.grid_width - 1, (rect.x + rect.width) // self.cell_size)
+            end_grid_y = min(self.grid_height - 1, (rect.y + rect.height) // self.cell_size)
+
+            for x in range(start_grid_x, end_grid_x + 1):
+                for y in range(start_grid_y, end_grid_y + 1):
+                    self.grid[x][y] = 1  # Marking grid cells as occupied by walls
+            
+    def get_neighbors(self, state):
+        grid_x, grid_y = state
+        neighbors = []
+        directions = [(-1, 0), (1, 0), (0, -1), (0, 1)]  # Left, right, up, down
+        for dx, dy in directions:
+            nx, ny = grid_x + dx, grid_y + dy
+            if 0 <= nx < self.grid_width and 0 <= ny < self.grid_height and self.grid[nx][ny] == 0:
+                neighbors.append((nx, ny))
+        return neighbors
+        
+    def step_cost(self, state, action):
+        return 1
+
+    def heuristic(self, state, goal): # Manhattan
+        return abs(state[0] - goal[0]) + abs(state[1] - goal[1])
+    
+    def plan_path(self, start, goal):
+        start_grid = (int(start.x) // self.cell_size, int(start.y) // self.cell_size)
+        goal_grid = (int(goal.x) // self.cell_size, int(goal.y) // self.cell_size)
+
+        result_node, _ = a_star_search(start_grid, goal_grid, self.get_neighbors, self.step_cost, self.heuristic)
+
+        if result_node is None:
+            return []  # No path found
+
+        # Reconstruct path
+        path = result_node.path()
+        return [Vector2D(x * self.cell_size + self.cell_size // 2, y * self.cell_size + self.cell_size // 2) for x, y in path]
