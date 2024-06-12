@@ -13,7 +13,8 @@ class AgentGroup:
         self.wander_weight = wander_weight
         self.king_zone = king_zone
         self.goal = None
-
+        self.world_target = None
+        
         if king_zone:
             king_pos = self.get_valid_position(king_zone)
             king = KingAgent(world, king_pos, self, self.king_zone, color=color)
@@ -42,6 +43,10 @@ class AgentGroup:
         return False
 
     def update(self, delta_time):
+        if self.goal == 'attack':
+            self.attack()
+        elif self.goal == 'retreat':
+            self.retreat()
         for agent in self.agents[:]:  # Iterate over a copy of the list
             if not agent.alive:
                 self.agents.remove(agent)
@@ -52,11 +57,16 @@ class AgentGroup:
         for agent in self.agents:
             agent.render(screen)
 
-    def get_agents(self):
-        return self.agents
-
-    def retreat(self):
-        pass
-
     def attack(self):
-        pass
+        # Command all agents to start attack mode
+        for agent in self.agents:
+            agent.start_attack(self.world_target)
+
+    def apply_behavior_weights(self, cohesion_weight, separation_weight, alignment_weight, wander_weight):
+        self.cohesion_weight = cohesion_weight
+        self.separation_weight = separation_weight
+        self.alignment_weight = alignment_weight
+        self.wander_weight = wander_weight
+
+        for agent in self.agents:
+            agent.apply_behavior_weights(cohesion_weight, separation_weight, alignment_weight, wander_weight)

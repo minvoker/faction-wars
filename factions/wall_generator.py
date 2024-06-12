@@ -1,7 +1,6 @@
 ''' Generate interesting walls for the simulation '''
 import pygame
 import random
-#from random import randint, choice, random
 
 class WallGenerator:
     def __init__(self, world, wall_thickness=20):

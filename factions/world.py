@@ -23,11 +23,11 @@ class World:
         
         # Add two groups of agents, lags around 500 each
         # AGENT GROUP CONSTRUCTOR cohesion_weight, separation_weight, alignment_weight, wander_weight
-        self.group1 = AgentGroup(self, 200, (255, 0, 0), 0.4, 0.7, 0.4, 0.8, self.kzone1)
-        self.group2 = AgentGroup(self, 200, (0, 0, 255), 0.4, 1.0, 0.3, 1.0, self.kzone2)
+        self.group1 = AgentGroup(self, 200, (255, 0, 0), 0.1, 0.5, 0.4, 0.8, self.kzone1)
+        self.group2 = AgentGroup(self, 200, (0, 0, 255), 0.3, 1.0, 0.3, 1.0, self.kzone2)
         
         # Add Food
-        self.num_food = 80
+        self.num_food = 30
         self.food = [Food(self) for _ in range(self.num_food)]
         
         # Grid overlay for path planning 
@@ -61,21 +61,21 @@ class World:
         pygame.draw.rect(screen, (0, 0, 255), (x, y, width, height), 2)
 
     def get_all_agents(self):
-        return self.group1.get_agents() + self.group2.get_agents()
+        return self.group1.agents + self.group2.agents
 
     def get_group_agents(self, group_number): # Get own faction agents
         if group_number == 1:
-            return self.group1.get_agents()
+            return self.group1.agents
         elif group_number == 2:
-            return self.group2.get_agents()
+            return self.group2.agents
         else:
             return []
 
     def get_other_group_agents(self, group): # Get other faction agents
         if group == self.group1:
-            return self.group2.get_agents()
+            return self.group2.agents
         elif group == self.group2:
-            return self.group1.get_agents()
+            return self.group1.agents
         else:
             return []
 
