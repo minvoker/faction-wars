@@ -22,7 +22,7 @@ class AgentGroup:
             for i in range(num_agents):
                 position = self.get_valid_position(king_zone)
                 agent = Agent(world, position, self, color=color, mode='wander')
-                agent.apply_behavior_weights(cohesion_weight, separation_weight, alignment_weight, wander_weight)
+                agent.apply_behavior_weights(self.cohesion_weight, self.separation_weight, self.alignment_weight, self.wander_weight)
                 self.agents.append(agent)
         else:
             raise ValueError("King zone must be specified to spawn agents")

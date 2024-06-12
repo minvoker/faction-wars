@@ -8,6 +8,7 @@ class Game:
         pygame.display.set_caption('Faction Wars')
         self.clock = pygame.time.Clock()
         self.font = pygame.font.Font(None, 30) 
+        self.count = pygame.font.Font(None, 22) 
         self.world = World(width, height) 
 
     def run(self):
@@ -21,11 +22,15 @@ class Game:
 
             self.world.update(delta_time)
             self.world.render(self.screen)
-            # FPS
+            # Text
             fps = int(self.clock.get_fps())
             fps_text = self.font.render(f"FPS: {fps}", True, pygame.Color('black'))
             self.screen.blit(fps_text, (10, 10))
             
+            group1 = len(self.world.group1.get_agents())
+            group2 = len(self.world.group2.get_agents())
+            counts = self.font.render(f"Red: {group1} Blue {group2}", True, pygame.Color('black'))
+            self.screen.blit(counts, (500, 10))
             pygame.display.flip()
             
         pygame.quit()

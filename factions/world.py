@@ -22,8 +22,9 @@ class World:
         self.walls = WallGenerator(self).test_walls
         
         # Add two groups of agents, lags around 500 each
-        self.group1 = AgentGroup(self, 200, (255, 0, 0), 0.4, 0.4, 0.4, 1.0, self.kzone1)
-        self.group2 = AgentGroup(self, 200, (0, 0, 255), 0.4, 1.0, 1.0, 1.0, self.kzone2)
+        # AGENT GROUP CONSTRUCTOR cohesion_weight, separation_weight, alignment_weight, wander_weight
+        self.group1 = AgentGroup(self, 200, (255, 0, 0), 0.4, 0.7, 0.4, 0.8, self.kzone1)
+        self.group2 = AgentGroup(self, 200, (0, 0, 255), 0.4, 1.0, 0.3, 1.0, self.kzone2)
         
         # Add Food
         self.num_food = 80

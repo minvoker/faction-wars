@@ -21,7 +21,8 @@ class Agent:
         self.separation_weight = 1.0
         self.alignment_weight = 1.0
         self.wander_weight = 1.0
-
+        self.neighbors = []
+        
         # Initialize wander properties
         self.wander_target = Vector2D(1, 0)
         self.wander_distance = 1.2 * scale
@@ -37,10 +38,13 @@ class Agent:
         self.target = None
         self.enemy = None
         self.path = []
+        self.flocking = False # Test
 
     def update(self, delta_time):
         # Calculate the steering force
-        steering_force = self.state_machine()
+        neighbors = self.get_neighbors(10)  # Neighbour detection radius
+
+        steering_force = self.state_machine(neighbors)
         if steering_force is None:
             steering_force = Vector2D(0, 0)
         steering_force.truncate(self.max_force)
@@ -59,7 +63,7 @@ class Agent:
         # Check for food collision
         self.check_food_collision()
 
-    def state_machine(self):
+    def state_machine(self, neighbors):
         if not self.alive:
             return Vector2D(0, 0)
 
@@ -90,12 +94,12 @@ class Agent:
                 self.attack_agent(self.enemy)
                 return Vector2D(0, 0)
             else:
+                print("Chasing", self.enemy.position)
                 return self.seek(self.enemy.position)
 
         elif self.mode == 'wander':
             self.target = None
-            neighbors = self.get_neighbors(10)  # Neighbour detection radius
-            if len(neighbors) >= 1:
+            if len(neighbors) >= 1 and not self.is_in_king_zone():
                 enemy = self.detect_enemy()
                 if enemy:
                     print("detected enemy")
@@ -108,12 +112,16 @@ class Agent:
 
     def calculate(self, neighbors):
         # Calculate the current steering force
-        delta = 3.0
+        delta = 5.0
 
         cohesion_force = self.cohesion(neighbors) * self.cohesion_weight
         separation_force = self.separation(neighbors) * self.separation_weight
         alignment_force = self.alignment(neighbors) * self.alignment_weight
-
+        
+        if self.flocking:
+            self.wander_weight = 0.0
+        else:
+            self.wander_weight = 0.8
         wander_force = self.wander(delta) * self.wander_weight
 
         steering_force = cohesion_force + separation_force + alignment_force + wander_force
@@ -240,6 +248,14 @@ class Agent:
         average_heading = self.calculate_average_heading(neighbors)
         return average_heading - self.velocity.get_normalised()
 
+    def start_flocking(self):
+        self.flocking = True
+        self.apply_behavior_weights(0.8, 0.8, 0.7, 0.4) # Increase cohesion
+        
+    def stop_flocking(self):
+        self.flocking = False
+        self.apply_behavior_weights(0.4, 0.4, 0.4, 0.4) # Reset to 0.4
+        
     # Individual steering behaviors
     def wander(self, delta):  # For random wandering
         wt = self.wander_target
@@ -284,6 +300,7 @@ class Agent:
             self.carrying_food.being_held_by = None
             self.carrying_food = None
             self.mode = 'wander'
+            
 
     def check_food_collision(self):
         if self.carrying_food is None:
@@ -297,24 +314,23 @@ class Agent:
                         break
 
     def is_in_king_zone(self):  # Check if agent is in king zone, IMPROVE DROP LOCATION LATER.
-        if self.carrying_food:
-            x, y, width, height = self.group.king_zone
-            margin = 50  # for the inner area
-            inner_x = x + margin
-            inner_y = y + margin
-            inner_width = width - 2 * margin
-            inner_height = height - 2 * margin
-            return inner_x <= self.position.x <= inner_x + inner_width and inner_y <= self.position.y <= inner_y + inner_height
-        return False
+        x, y, width, height = self.group.king_zone
+        margin = 50  # for the inner area
+        inner_x = x + margin
+        inner_y = y + margin
+        inner_width = width - 2 * margin
+        inner_height = height - 2 * margin
+        return inner_x <= self.position.x <= inner_x + inner_width and inner_y <= self.position.y <= inner_y + inner_height 
 
     # Attack
     def notify_allies_to_attack(self, enemy):
         # Notify nearby allies to attack the detected enemy
-        neighbors = self.get_neighbors(20)
-        for agent in neighbors:
+        for agent in self.neighbors:
             if agent.group == self.group:
                 agent.enemy = enemy # #
                 agent.mode = 'fight'
+                print("Now Chasing", agent.enemy.position)
+                agent.seek(enemy.position)
                 
 
     def attack_agent(self, enemy):
