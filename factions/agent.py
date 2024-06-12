@@ -1,6 +1,6 @@
 import pygame
 from vector2d import Vector2D
-from random import uniform, randint
+from random import uniform
 
 class Agent:
     def __init__(self, world, position, group, radius=5, color=(255, 0, 0), scale=1, mass=0.8, mode='wander'):
@@ -22,7 +22,6 @@ class Agent:
         self.alignment_weight = 1.0
         self.wander_weight = 1.0
         self.neighbors = []
-        self.enemy = None
 
         # Initialize wander properties
         self.wander_target = Vector2D(1, 0)
@@ -39,6 +38,7 @@ class Agent:
         self.target = None
         self.path = []
         self.world_target = None
+        self.enemy = None
 
     def update(self, delta_time):
         # Update neighbors

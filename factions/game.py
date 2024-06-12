@@ -44,6 +44,7 @@ class Game:
             'separation_group2': Slider(width - 150, 170, 150, 10, 0, 1, self.world.group2.separation_weight),
             'alignment_group2': Slider(width - 150, 190, 150, 10, 0, 1, self.world.group2.alignment_weight),
             'wander_group2': Slider(width - 150, 210, 150, 10, 0, 1, self.world.group2.wander_weight),
+            'max_speed': Slider(width - 150, 300, 150, 10, 1, 25, 10),
         }
 
     def run(self):
@@ -79,6 +80,9 @@ class Game:
                 self.sliders['alignment_group2'].value,
                 self.sliders['wander_group2'].value,
             )
+            max_speed = self.sliders['max_speed'].value
+            for agent in self.world.group1.agents + self.world.group2.agents:
+                agent.max_speed = max_speed
 
             self.world.update(delta_time)
             self.world.render(self.screen)

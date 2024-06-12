@@ -3,7 +3,7 @@ from agent_group import AgentGroup
 from matrix33 import Matrix33
 from food import Food
 from wall_generator import WallGenerator
-from astar import Node, a_star_search 
+from astar import a_star_search 
 from vector2d import Vector2D
 
 class World:

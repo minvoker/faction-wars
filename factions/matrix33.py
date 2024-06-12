@@ -1,4 +1,4 @@
-'''3x3 matrix class for 2d operations on 2d points
+'''3x3 matrix class for 2d operations on 2d points. Only used for Wander steering behavior in this project.
 '''
 
 from math import cos, sin
