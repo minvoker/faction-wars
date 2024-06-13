@@ -19,7 +19,7 @@ class World:
         self.kzone2 = (width - start_zone_size, height - start_zone_size, start_zone_size, start_zone_size)
         
         # Add walls
-        self.walls = WallGenerator(self).test_walls
+        self.walls = WallGenerator(self).generate
         
         # Add two groups of agents, lags around 500 each
         # AGENT GROUP CONSTRUCTOR cohesion_weight, separation_weight, alignment_weight, wander_weight
